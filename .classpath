@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="base/src"/>
+	<classpathentry kind="src" path="client/src"/>
+	<classpathentry kind="src" path="sqlj/src"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/adempiere"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/AdoptOpenJDK11">
+		<attributes>
+			<attribute name="module" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="C:/Users/SHW_User/OneDrive/Adempiere_Proyectos/ProyectoSistemasAereos/Adempiere_2020/Instalation/SAPROD_20211215/packages/WithHolding/lib/WithHoldings.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
