@@ -1,0 +1,647 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.6.0.final using JasperReports Library version 6.6.0  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="SalesRep Detail Percentage ES" pageWidth="612" pageHeight="792" columnWidth="552" leftMargin="30" rightMargin="30" topMargin="20" bottomMargin="20" uuid="02772633-40e7-4900-97d3-30cf4a7d32a4">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<property name="ireport.zoom" value="2.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="240"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="DataAdapter_AGRINTERPROD.xml"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w1" value="248"/>
+	<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w2" value="746"/>
+	<property name="com.jaspersoft.studio.property.dataset.dialog.DatasetDialog.sash.w1" value="616"/>
+	<property name="com.jaspersoft.studio.property.dataset.dialog.DatasetDialog.sash.w2" value="372"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<subDataset name="datasetClientDaten" uuid="79e6abad-df23-4e4c-92c5-a391c98a53fe">
+		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="DataAdapter_AGRINTERPROD.xml"/>
+		<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+		<parameter name="AD_CLIENT_ID" class="java.lang.Integer">
+			<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+		</parameter>
+		<queryString>
+			<![CDATA[select c.name as printname, binarydata as logo
+from
+ad_clientinfo cli
+left join ad_image ai on cli.logoreport_id = ai.ad_image_ID
+INNER JOIN AD_Client c on c.ad_Client_ID=cli.ad_Client_ID
+where cli.AD_Client_ID = $P{AD_CLIENT_ID}]]>
+		</queryString>
+		<field name="printname" class="java.lang.String">
+			<property name="com.jaspersoft.studio.field.label" value="printname"/>
+		</field>
+		<field name="logo" class="java.lang.Object">
+			<property name="com.jaspersoft.studio.field.label" value="logo"/>
+		</field>
+	</subDataset>
+	<parameter name="AD_CLIENT_ID" class="java.lang.Integer">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<parameter name="DateInvoiced" class="java.sql.Timestamp"/>
+	<parameter name="AD_USER_ID" class="java.lang.Integer"/>
+	<parameter name="SalesRep_ID" class="java.math.BigDecimal">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<parameter name="IsSOTrx" class="java.lang.String">
+		<defaultValueExpression><![CDATA['Y']]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[select salesrepname,
+        CASE
+            WHEN dateinvoicedonlymonth = 1 THEN 'Enero'
+            WHEN dateinvoicedonlymonth = 2 THEN 'Febrero'
+            WHEN dateinvoicedonlymonth = 3 THEN 'Marzo'
+            WHEN dateinvoicedonlymonth = 4 THEN 'Abril'
+            WHEN dateinvoicedonlymonth = 5 THEN 'Mayo'
+            WHEN dateinvoicedonlymonth = 6 THEN 'Junio'
+            WHEN dateinvoicedonlymonth = 7 THEN 'Julio'
+            WHEN dateinvoicedonlymonth = 8 THEN 'Agosto'
+            WHEN dateinvoicedonlymonth = 9 THEN 'Septiembre'
+            WHEN dateinvoicedonlymonth = 10 THEN 'Octubre'
+            WHEN dateinvoicedonlymonth = 11 THEN 'Noviembre'
+            ELSE 'Diciembre'
+        END as dateinvoicedmonthname,
+  
+  coalesce( SUM(linenetamtreal) FILTER (WHERE dateinvoicedonlyyear=date_part('YEAR'::text, $P{DateInvoiced}::timestamp) - 4) ,0) AS "year-4amt",
+  coalesce( SUM(linenetamtreal) FILTER (WHERE dateinvoicedonlyyear=date_part('YEAR'::text, $P{DateInvoiced}::timestamp) - 3) ,0)  AS "year-3amt",
+  coalesce( SUM(linenetamtreal) FILTER (WHERE dateinvoicedonlyyear=date_part('YEAR'::text, $P{DateInvoiced}::timestamp) - 2) ,0)  AS "year-2amt",
+  coalesce( SUM(linenetamtreal) FILTER (WHERE dateinvoicedonlyyear=date_part('YEAR'::text, $P{DateInvoiced}::timestamp) - 1) ,0)  AS "year-1amt",
+  coalesce( SUM(linenetamtreal) FILTER (WHERE dateinvoicedonlyyear=date_part('YEAR'::text, $P{DateInvoiced}::timestamp)    ) ,0)  AS "year0amt"
+
+  from rv_invoiceline_detail 
+where 
+dateinvoicedonlyyear >= date_part('YEAR'::text, $P{DateInvoiced}::timestamp) - 4 
+AND issotrx=$P{IsSOTrx}  
+and ($P{SalesRep_ID} IS NULL OR SalesRep_ID=$P{SalesRep_ID})
+
+group by salesrepname, dateinvoicedonlymonth
+order by salesrepname asc, dateinvoicedonlymonth asc]]>
+	</queryString>
+	<field name="salesrepname" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="salesrepname"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="shw_invoicing_detailed"/>
+	</field>
+	<field name="dateinvoicedmonthname" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="dateinvoicedmonthname"/>
+	</field>
+	<field name="year-4amt" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="year-4amt"/>
+	</field>
+	<field name="year-3amt" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="year-3amt"/>
+	</field>
+	<field name="year-2amt" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="year-2amt"/>
+	</field>
+	<field name="year-1amt" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="year-1amt"/>
+	</field>
+	<field name="year0amt" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="year0amt"/>
+	</field>
+	<variable name="Year0AmtTotal" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{year0amt}]]></variableExpression>
+	</variable>
+	<variable name="Year-1AmtTotal" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{year-1amt}]]></variableExpression>
+	</variable>
+	<variable name="Year-2AmtTotal" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{year-2amt}]]></variableExpression>
+	</variable>
+	<variable name="Year-3AmtTotal" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{year-3amt}]]></variableExpression>
+	</variable>
+	<variable name="Year-4AmtTotal" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{year-4amt}]]></variableExpression>
+	</variable>
+	<variable name="Year0Amt" class="java.math.BigDecimal" resetType="Group" resetGroup="SalesRep" calculation="Sum">
+		<variableExpression><![CDATA[$F{year0amt}]]></variableExpression>
+	</variable>
+	<variable name="Year-1Amt" class="java.math.BigDecimal" resetType="Group" resetGroup="SalesRep" calculation="Sum">
+		<variableExpression><![CDATA[$F{year-1amt}]]></variableExpression>
+	</variable>
+	<variable name="Year-2Amt" class="java.math.BigDecimal" resetType="Group" resetGroup="SalesRep" calculation="Sum">
+		<variableExpression><![CDATA[$F{year-2amt}]]></variableExpression>
+	</variable>
+	<variable name="Year-3Amt" class="java.math.BigDecimal" resetType="Group" resetGroup="SalesRep" calculation="Sum">
+		<variableExpression><![CDATA[$F{year-3amt}]]></variableExpression>
+	</variable>
+	<variable name="Year-4Amt" class="java.math.BigDecimal" resetType="Group" resetGroup="SalesRep" calculation="Sum">
+		<variableExpression><![CDATA[$F{year-4amt}]]></variableExpression>
+		<initialValueExpression><![CDATA[BigDecimal.ZERO]]></initialValueExpression>
+	</variable>
+	<variable name="Year0Percentage" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[$F{year-1amt} == null || 
+$F{year-1amt}.compareTo(new java.math.BigDecimal(0.0) )==0 || $F{year-1amt}.equals(BigDecimal.ZERO) ?BigDecimal.ZERO:$F{year0amt}.divide( $F{year-1amt}, 2, RoundingMode.HALF_UP).subtract(java.math.BigDecimal.valueOf(1) ).multiply(java.math.BigDecimal.valueOf(100) )]]></variableExpression>
+	</variable>
+	<variable name="Year-1Percentage" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[$F{year-2amt} == null || 
+$F{year-2amt}.compareTo(new java.math.BigDecimal(0.0) )==0 || $F{year-2amt}.equals(BigDecimal.ZERO) ?BigDecimal.ZERO:$F{year-1amt}.divide( $F{year-2amt}, 2, RoundingMode.HALF_UP).subtract(java.math.BigDecimal.valueOf(1) ).multiply(java.math.BigDecimal.valueOf(100) )]]></variableExpression>
+	</variable>
+	<variable name="Year-2Percentage" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[$F{year-3amt} == null || 
+$F{year-3amt}.compareTo(new java.math.BigDecimal(0.0) )==0 || $F{year-3amt}.equals(BigDecimal.ZERO) ?BigDecimal.ZERO:$F{year-2amt}.divide( $F{year-3amt}, 2, RoundingMode.HALF_UP).subtract(java.math.BigDecimal.valueOf(1) ).multiply(java.math.BigDecimal.valueOf(100) )]]></variableExpression>
+	</variable>
+	<variable name="Year-3Percentage" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[$F{year-4amt} == null || 
+$F{year-4amt}.compareTo(new java.math.BigDecimal(0.0) )==0 || $F{year-4amt}.equals(BigDecimal.ZERO) ?BigDecimal.ZERO:$F{year-3amt}.divide( $F{year-4amt}, 2, RoundingMode.HALF_UP).subtract(java.math.BigDecimal.valueOf(1) ).multiply(java.math.BigDecimal.valueOf(100) )]]></variableExpression>
+	</variable>
+	<variable name="Year0SalesRepPercentage" class="java.math.BigDecimal" resetType="Group" resetGroup="SalesRep">
+		<variableExpression><![CDATA[$V{Year-1Amt} == null || 
+$V{Year-1Amt}.compareTo(new java.math.BigDecimal(0.0) )==0 || $V{Year-1Amt}.equals(BigDecimal.ZERO)?BigDecimal.ZERO:$V{Year0Amt}.divide( $V{Year-1Amt}, 2, RoundingMode.HALF_UP).subtract(java.math.BigDecimal.valueOf(1) ).multiply(java.math.BigDecimal.valueOf(100) )]]></variableExpression>
+	</variable>
+	<variable name="Year-1SalesRepPercentage" class="java.math.BigDecimal" resetType="Group" resetGroup="SalesRep">
+		<variableExpression><![CDATA[$V{Year-2Amt} == null || 
+$V{Year-2Amt}.compareTo(new java.math.BigDecimal(0.0) )==0 || $V{Year-2Amt}.equals(BigDecimal.ZERO)?BigDecimal.ZERO:$V{Year-1Amt}.divide( $V{Year-2Amt}, 2, RoundingMode.HALF_UP).subtract(java.math.BigDecimal.valueOf(1) ).multiply(java.math.BigDecimal.valueOf(100) )]]></variableExpression>
+	</variable>
+	<variable name="Year-2SalesRepPercentage" class="java.math.BigDecimal" resetType="Group" resetGroup="SalesRep">
+		<variableExpression><![CDATA[$V{Year-3Amt} == null || 
+$V{Year-3Amt}.compareTo(new java.math.BigDecimal(0.0) )==0 || $V{Year-3Amt}.equals(BigDecimal.ZERO)?BigDecimal.ZERO:$V{Year-2Amt}.divide( $V{Year-3Amt}, 2, RoundingMode.HALF_UP).subtract(java.math.BigDecimal.valueOf(1) ).multiply(java.math.BigDecimal.valueOf(100) )]]></variableExpression>
+	</variable>
+	<variable name="Year-3SalesRepPercentage" class="java.math.BigDecimal" resetType="Group" resetGroup="SalesRep">
+		<variableExpression><![CDATA[$V{Year-4Amt} == null || 
+$V{Year-4Amt}.compareTo(new java.math.BigDecimal(0.0) )==0 || $V{Year-4Amt}.equals(BigDecimal.ZERO) ?BigDecimal.ZERO:$V{Year-3Amt}.divide( $V{Year-4Amt}, 2, RoundingMode.HALF_UP).subtract(java.math.BigDecimal.valueOf(1) ).multiply(java.math.BigDecimal.valueOf(100) )]]></variableExpression>
+	</variable>
+	<variable name="Year0SalesRepTotalPercentage" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[$V{Year-1AmtTotal} == null || 
+$V{Year-1AmtTotal}.compareTo(new java.math.BigDecimal(0.0) )==0 || $V{Year-1AmtTotal}.equals(BigDecimal.ZERO) ?BigDecimal.ZERO:$V{Year0AmtTotal}.divide( $V{Year-1AmtTotal}, 2, RoundingMode.HALF_UP).subtract(java.math.BigDecimal.valueOf(1) ).multiply(java.math.BigDecimal.valueOf(100) )]]></variableExpression>
+	</variable>
+	<variable name="Year-1SalesRepTotalPercentage" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[$V{Year-2AmtTotal} == null || 
+$V{Year-2AmtTotal}.compareTo(new java.math.BigDecimal(0.0) )==0 || $V{Year-2AmtTotal}.equals(BigDecimal.ZERO) ?BigDecimal.ZERO:$V{Year-1AmtTotal}.divide( $V{Year-2AmtTotal}, 2, RoundingMode.HALF_UP).subtract(java.math.BigDecimal.valueOf(1) ).multiply(java.math.BigDecimal.valueOf(100) )]]></variableExpression>
+	</variable>
+	<variable name="Year-2SalesRepTotalPercentage" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[$V{Year-3AmtTotal} == null || 
+$V{Year-3AmtTotal}.compareTo(new java.math.BigDecimal(0.0) )==0 || $V{Year-3AmtTotal}.equals(BigDecimal.ZERO) ?BigDecimal.ZERO:$V{Year-2AmtTotal}.divide( $V{Year-3AmtTotal}, 2, RoundingMode.HALF_UP).subtract(java.math.BigDecimal.valueOf(1) ).multiply(java.math.BigDecimal.valueOf(100) )]]></variableExpression>
+	</variable>
+	<variable name="Year-3SalesRepTotalPercentage" class="java.math.BigDecimal">
+		<variableExpression><![CDATA[$V{Year-4AmtTotal} == null || 
+$V{Year-4AmtTotal}.compareTo(new java.math.BigDecimal(0.0) )==0 || $V{Year-4AmtTotal}.equals(BigDecimal.ZERO) ?BigDecimal.ZERO:$V{Year-3AmtTotal}.divide( $V{Year-4AmtTotal}, 2, RoundingMode.HALF_UP).subtract(java.math.BigDecimal.valueOf(1) ).multiply(java.math.BigDecimal.valueOf(100) )]]></variableExpression>
+	</variable>
+	<group name="SalesRep" isStartNewPage="true" isReprintHeaderOnEachPage="true">
+		<groupExpression><![CDATA[$F{salesrepname}]]></groupExpression>
+		<groupHeader>
+			<band height="33">
+				<line>
+					<reportElement x="1" y="31" width="550" height="1" uuid="e5828b60-6162-4e75-90df-fae31d944c14">
+						<property name="com.jaspersoft.studio.unit.height" value="mm"/>
+						<property name="com.jaspersoft.studio.unit.width" value="mm"/>
+					</reportElement>
+					<graphicElement>
+						<pen lineStyle="Double"/>
+					</graphicElement>
+				</line>
+				<staticText>
+					<reportElement x="0" y="0" width="55" height="12" uuid="c233086d-d71e-4ff1-ae70-e5116ca7d7f1">
+						<property name="com.jaspersoft.studio.unit.height" value="mm"/>
+					</reportElement>
+					<text><![CDATA[Vendedor:]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="true">
+					<reportElement x="60" y="0" width="130" height="12" uuid="26e6859e-a1d6-4352-a7c1-241dc10cbf6c"/>
+					<textFieldExpression><![CDATA[$F{salesrepname}]]></textFieldExpression>
+				</textField>
+				<textField pattern="####" isBlankWhenNull="true">
+					<reportElement x="140" y="19" width="80" height="11" uuid="61d5dc7b-c6ae-40f3-bba9-a8b31e5d4853">
+						<property name="com.jaspersoft.studio.unit.height" value="mm"/>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA[($P{DateInvoiced}.getYear())-4+1900]]></textFieldExpression>
+				</textField>
+				<textField pattern="####" isBlankWhenNull="true">
+					<reportElement x="223" y="19" width="80" height="11" uuid="4e857a7d-0b88-45ff-a69f-cfadf1e627f9">
+						<property name="com.jaspersoft.studio.unit.height" value="mm"/>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA[($P{DateInvoiced}.getYear())-3+1900]]></textFieldExpression>
+				</textField>
+				<textField pattern="####" isBlankWhenNull="true">
+					<reportElement x="305" y="19" width="80" height="11" uuid="4e21845b-89d1-46f6-9cba-b8f57baf2183">
+						<property name="com.jaspersoft.studio.unit.height" value="mm"/>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA[($P{DateInvoiced}.getYear())-2+1900]]></textFieldExpression>
+				</textField>
+				<textField pattern="####" isBlankWhenNull="true">
+					<reportElement x="387" y="19" width="79" height="11" uuid="6f45bef5-eeeb-46f7-a4dc-81ec803ea892">
+						<property name="com.jaspersoft.studio.unit.height" value="mm"/>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA[($P{DateInvoiced}.getYear())-1+1900]]></textFieldExpression>
+				</textField>
+				<textField pattern="####" isBlankWhenNull="true">
+					<reportElement x="470" y="20" width="79" height="11" uuid="50e09d8f-d0da-4bb4-8f7f-770e320f656d">
+						<property name="com.jaspersoft.studio.unit.height" value="mm"/>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA[($P{DateInvoiced}.getYear())+1900]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+		<groupFooter>
+			<band height="27">
+				<line>
+					<reportElement x="0" y="0" width="552" height="1" uuid="32fff4ce-2f39-453a-9463-95dd9e05a2ac"/>
+				</line>
+				<textField pattern="#,##0.00" isBlankWhenNull="true">
+					<reportElement x="470" y="1" width="81" height="12" uuid="c34323f0-1a7f-4e85-a94c-3461bd7ce395"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="9" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{Year0Amt}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement stretchType="ContainerBottom" x="1" y="1" width="129" height="12" uuid="7a8e822e-3a51-48b7-98b1-c53160455f67"/>
+					<textElement>
+						<font size="10"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Totales " .concat($F{salesrepname})]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true">
+					<reportElement x="387" y="1" width="79" height="12" uuid="a949cf9b-5d13-49f7-bdb2-1560e48b6245"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="9" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{Year-1Amt}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true">
+					<reportElement x="305" y="1" width="80" height="12" uuid="a15d9f7f-cf95-4fb9-93b4-066bb2ef2a06"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="9" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{Year-2Amt}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true">
+					<reportElement x="223" y="1" width="78" height="12" uuid="6007ea9a-9fb9-48b1-bc9f-0c834dd6dfb1"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="9" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{Year-3Amt}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true">
+					<reportElement x="140" y="1" width="80" height="12" uuid="399d45a9-0811-4a4d-90de-12eb24cf3d60"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="9" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{Year-4Amt}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0" isBlankWhenNull="true">
+					<reportElement x="481" y="13" width="70" height="9" isRemoveLineWhenBlank="true" uuid="a9dafc93-b333-46f5-847c-8d398268156f"/>
+					<textElement textAlignment="Right">
+						<font size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{Year0SalesRepPercentage}.compareTo(BigDecimal.ZERO)==0?null:"(".concat($V{Year0SalesRepPercentage}.setScale(0).toString()).concat("%)")]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0" isBlankWhenNull="true">
+					<reportElement x="396" y="13" width="70" height="9" isRemoveLineWhenBlank="true" uuid="42b251ec-4a41-4494-a874-77e3d69f6f7f"/>
+					<textElement textAlignment="Right">
+						<font size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{Year-1SalesRepPercentage}.compareTo(BigDecimal.ZERO)==0?null:"(".concat($V{Year-1SalesRepPercentage}.setScale(0).toString()).concat("%)")]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0" isBlankWhenNull="true">
+					<reportElement x="314" y="13" width="70" height="9" isRemoveLineWhenBlank="true" uuid="7ef84444-96e7-4df4-952c-d1579d7dbc4c"/>
+					<textElement textAlignment="Right">
+						<font size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{Year-2SalesRepPercentage}.compareTo(BigDecimal.ZERO)==0?null:"(".concat($V{Year-2SalesRepPercentage}.setScale(0).toString()).concat("%)")]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0" isBlankWhenNull="true">
+					<reportElement x="231" y="13" width="70" height="9" isRemoveLineWhenBlank="true" uuid="f3d4ba8b-27f0-4c58-baae-0ed108bd035f"/>
+					<textElement textAlignment="Right">
+						<font size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{Year-3SalesRepPercentage}.compareTo(BigDecimal.ZERO)==0?null:"(".concat($V{Year-3SalesRepPercentage}.setScale(0).toString()).concat("%)")]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupFooter>
+	</group>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="76" splitType="Stretch">
+			<componentElement>
+				<reportElement stretchType="ContainerBottom" x="1" y="3" width="551" height="53" uuid="0843a8f2-078a-4425-8815-7d062cd0c740"/>
+				<jr:list xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" printOrder="Vertical">
+					<datasetRun subDataset="datasetClientDaten" uuid="2e1c2019-f0d9-4d1e-928c-022959a7222a">
+						<datasetParameter name="AD_CLIENT_ID">
+							<datasetParameterExpression><![CDATA[$P{AD_CLIENT_ID}]]></datasetParameterExpression>
+						</datasetParameter>
+						<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+					</datasetRun>
+					<jr:listContents height="53" width="551">
+						<image>
+							<reportElement x="0" y="14" width="228" height="38" uuid="a4533e05-5fc7-4120-bcb3-a772652c0aae"/>
+							<imageExpression><![CDATA[$F{logo}]]></imageExpression>
+						</image>
+						<textField>
+							<reportElement x="1" y="1" width="273" height="11" uuid="dc19b01e-c475-49ae-8a04-b906ffb7bbfb"/>
+							<textElement>
+								<font size="8" isBold="true"/>
+							</textElement>
+							<textFieldExpression><![CDATA[$F{printname}]]></textFieldExpression>
+						</textField>
+					</jr:listContents>
+				</jr:list>
+			</componentElement>
+			<staticText>
+				<reportElement key="Empresa" x="1" y="56" width="552" height="18" uuid="d2b59db3-2367-4ed6-942e-0dca8d931414"/>
+				<textElement textAlignment="Center" verticalAlignment="Bottom">
+					<font size="14" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Vendedores - Ventas comparativas 5 años consecutivos]]></text>
+			</staticText>
+		</band>
+	</title>
+	<pageHeader>
+		<band height="25" splitType="Stretch">
+			<textField isBlankWhenNull="false">
+				<reportElement key="VPaginaNo" x="430" y="0" width="88" height="13" uuid="a6e9cb39-787f-478d-9603-6dd9be1d0a4c"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Página ".concat($V{PAGE_NUMBER}.toString()).concat(" de ")]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report" isBlankWhenNull="false">
+				<reportElement key="VNoDePaginas" x="518" y="0" width="33" height="13" uuid="da0ee7ac-5b97-4a0c-aeb9-6a12d7895be3"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="0" y="21" width="552" height="1" uuid="8617ced7-e0e9-463c-85ee-84954e7e0321"/>
+				<graphicElement>
+					<pen lineStyle="Double"/>
+				</graphicElement>
+			</line>
+			<staticText>
+				<reportElement key="Empresa" x="5" y="0" width="284" height="18" uuid="a083261f-286c-4f38-809d-5e32cd47064e"/>
+				<textElement textAlignment="Center" verticalAlignment="Bottom">
+					<font size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Vendedores - Ventas comparativas]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="Empresa" x="318" y="0" width="101" height="18" uuid="6fe572cc-e0f5-4ec7-8b56-d38504490fc1"/>
+				<textElement textAlignment="Left" verticalAlignment="Bottom">
+					<font size="8" isBold="false"/>
+				</textElement>
+				<text><![CDATA[Todos montos en USD]]></text>
+			</staticText>
+		</band>
+	</pageHeader>
+	<detail>
+		<band height="22" splitType="Stretch">
+			<textField pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement x="470" y="0" width="81" height="10" uuid="e8f4561e-0246-4010-9099-ac1b16162279">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{year0amt}.compareTo(BigDecimal.ZERO)==0?null:$F{year0amt}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="2" y="0" width="68" height="12" uuid="5fd43c80-176b-454b-9a06-1c7752dc3711">
+					<property name="com.jaspersoft.studio.unit.y" value="mm"/>
+					<property name="com.jaspersoft.studio.unit.height" value="mm"/>
+				</reportElement>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{dateinvoicedmonthname}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement x="387" y="0" width="80" height="10" uuid="fd8d504d-92a5-44d6-8024-381e9fe8a56d">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{year-1amt}.compareTo(BigDecimal.ZERO)==0?null:$F{year-1amt}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement x="305" y="0" width="80" height="10" uuid="c5c32dc3-e429-41b1-aa6a-0006db867a9f">
+					<property name="com.jaspersoft.studio.unit.height" value="mm"/>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{year-2amt}.compareTo(BigDecimal.ZERO)==0?null:$F{year-2amt}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement x="223" y="0" width="80" height="10" uuid="13c96967-1519-4080-8601-9e7313a52f7e">
+					<property name="com.jaspersoft.studio.unit.height" value="mm"/>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{year-3amt}.compareTo(BigDecimal.ZERO)==0?null:$F{year-3amt}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement x="140" y="0" width="80" height="10" uuid="bdac7e87-b41f-4f76-9e79-ed1114555fea">
+					<property name="com.jaspersoft.studio.unit.height" value="mm"/>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{year-4amt}.compareTo(BigDecimal.ZERO)==0?null:$F{year-4amt}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0" isBlankWhenNull="true">
+				<reportElement x="481" y="10" width="70" height="9" isRemoveLineWhenBlank="true" uuid="086d6941-79f0-4b1e-b9af-0c2166cf92c2"/>
+				<textElement textAlignment="Right">
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression><![CDATA[($V{Year0Percentage}.compareTo(BigDecimal.ZERO)==0  ||$V{Year0Percentage}.compareTo(java.math.BigDecimal.valueOf(-100))==0)?null:"(".concat($V{Year0Percentage}.setScale(0).toString()).concat("%)")]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0" isBlankWhenNull="true">
+				<reportElement x="397" y="10" width="70" height="9" isRemoveLineWhenBlank="true" uuid="39c2cfcd-2913-4059-8461-6bb09bf427e9"/>
+				<textElement textAlignment="Right">
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{Year-1Percentage}.compareTo(BigDecimal.ZERO)==0 ||$V{Year-1Percentage}.compareTo(java.math.BigDecimal.valueOf(-100))==0?null:"(".concat($V{Year-1Percentage}.setScale(0).toString()).concat("%)")]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0" isBlankWhenNull="true">
+				<reportElement x="315" y="10" width="70" height="9" isRemoveLineWhenBlank="true" uuid="d1a110e5-1259-4ea7-a9a3-593c5cf47a6a"/>
+				<textElement textAlignment="Right">
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{Year-2Percentage}.compareTo(BigDecimal.ZERO)==0 ||$V{Year-2Percentage}.compareTo(java.math.BigDecimal.valueOf(-100))==0?null:"(".concat($V{Year-2Percentage}.setScale(0).toString()).concat("%)")]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0" isBlankWhenNull="true">
+				<reportElement x="233" y="10" width="70" height="9" isRemoveLineWhenBlank="true" uuid="1ded8f20-64ca-49c6-9e34-6af5df9a79fd"/>
+				<textElement textAlignment="Right">
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{Year-3Percentage}.compareTo(BigDecimal.ZERO)==0 ||$V{Year-3Percentage}.compareTo(java.math.BigDecimal.valueOf(-100))==0?null:"(".concat($V{Year-3Percentage}.setScale(0).toString()).concat("%)")]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band height="40" splitType="Stretch">
+			<textField>
+				<reportElement x="2" y="20" width="546" height="15" uuid="e73343c2-3664-46b3-8110-ebad490359d8"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8" isItalic="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Fecha: ".concat(new SimpleDateFormat("dd/MM/yyyy HH.mm").format(new Date()) )]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageFooter>
+	<summary>
+		<band height="68">
+			<staticText>
+				<reportElement key="Empresa" x="2" y="3" width="230" height="20" uuid="2c6314a7-6f35-485c-9c8b-95369deb9d54"/>
+				<textElement textAlignment="Left" verticalAlignment="Top">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Total Vendedores]]></text>
+			</staticText>
+			<textField pattern="####" isBlankWhenNull="true">
+				<reportElement x="470" y="24" width="80" height="11" uuid="50f5e200-be66-4f20-b32c-ac3b3c856fa6">
+					<property name="com.jaspersoft.studio.unit.height" value="mm"/>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Montos ".concat(String.valueOf(($P{DateInvoiced}.getYear())+1900))]]></textFieldExpression>
+			</textField>
+			<textField pattern="####" isBlankWhenNull="true">
+				<reportElement x="387" y="24" width="80" height="11" uuid="46a22dc8-dc47-4f6d-bb25-0f8d62437cf1">
+					<property name="com.jaspersoft.studio.unit.height" value="mm"/>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Montos ".concat(String.valueOf(($P{DateInvoiced}.getYear())-1+1900))]]></textFieldExpression>
+			</textField>
+			<textField pattern="####" isBlankWhenNull="true">
+				<reportElement x="305" y="24" width="80" height="11" uuid="2792b5ae-9246-4b39-b09c-158a846b29ff">
+					<property name="com.jaspersoft.studio.unit.height" value="mm"/>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Montos ".concat(String.valueOf(($P{DateInvoiced}.getYear())-2+1900))]]></textFieldExpression>
+			</textField>
+			<textField pattern="####" isBlankWhenNull="true">
+				<reportElement x="223" y="24" width="80" height="11" uuid="a5b87fe4-bfe1-40e3-bf2c-98c98b4c2439">
+					<property name="com.jaspersoft.studio.unit.height" value="mm"/>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Montos ".concat(String.valueOf(($P{DateInvoiced}.getYear())-3+1900))]]></textFieldExpression>
+			</textField>
+			<textField pattern="####" isBlankWhenNull="true">
+				<reportElement x="140" y="24" width="80" height="11" uuid="4c95940d-1a85-415e-83a7-01f3380cbb24">
+					<property name="com.jaspersoft.studio.unit.height" value="mm"/>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Montos ".concat(String.valueOf(($P{DateInvoiced}.getYear())-4+1900))]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report" pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement x="470" y="40" width="81" height="14" uuid="e6bc77db-a86a-4303-9ead-35c5e1af39b2"/>
+				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{Year0AmtTotal}]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report" pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement x="387" y="40" width="80" height="14" uuid="a1cba029-5ee9-45d4-9223-137470b2750b">
+					<property name="com.jaspersoft.studio.unit.height" value="mm"/>
+				</reportElement>
+				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{Year-1AmtTotal}]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report" pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement x="305" y="40" width="80" height="14" uuid="da2e4802-9b9a-4e71-9edf-cca656f9a9a1">
+					<property name="com.jaspersoft.studio.unit.height" value="mm"/>
+				</reportElement>
+				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{Year-2AmtTotal}]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report" pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement x="223" y="40" width="80" height="14" uuid="11fd6ad2-a49e-42c0-8d21-924d2634d21a">
+					<property name="com.jaspersoft.studio.unit.height" value="mm"/>
+				</reportElement>
+				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{Year-3AmtTotal}]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report" pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement x="140" y="40" width="80" height="14" uuid="c13a727d-aba9-45e5-91d0-2688bb26aeb0">
+					<property name="com.jaspersoft.studio.unit.height" value="mm"/>
+				</reportElement>
+				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{Year-4AmtTotal}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0" isBlankWhenNull="true">
+				<reportElement x="481" y="54" width="70" height="9" isRemoveLineWhenBlank="true" uuid="2abe4eec-ba06-4870-97bd-c61c598a1db7"/>
+				<textElement textAlignment="Right">
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression><![CDATA["(".concat($V{Year0SalesRepTotalPercentage}.setScale(0).toString()).concat("%)")]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0" isBlankWhenNull="true">
+				<reportElement x="397" y="54" width="70" height="9" isRemoveLineWhenBlank="true" uuid="526ec1ff-c9ef-49fc-b0bd-8b337ed8dc19"/>
+				<textElement textAlignment="Right">
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression><![CDATA["(".concat($V{Year-1SalesRepTotalPercentage}.setScale(0).toString()).concat("%)")]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0" isBlankWhenNull="true">
+				<reportElement x="315" y="54" width="70" height="9" isRemoveLineWhenBlank="true" uuid="0ff451ea-9ee6-4e5d-970f-63d9196d5199"/>
+				<textElement textAlignment="Right">
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression><![CDATA["(".concat($V{Year-2SalesRepTotalPercentage}.setScale(0).toString()).concat("%)")]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0" isBlankWhenNull="true">
+				<reportElement x="233" y="54" width="70" height="9" isRemoveLineWhenBlank="true" uuid="b3e1305d-9476-4345-a957-0d6ac1bc42a2"/>
+				<textElement textAlignment="Right">
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression><![CDATA["(".concat($V{Year-3SalesRepTotalPercentage}.setScale(0).toString()).concat("%)")]]></textFieldExpression>
+			</textField>
+		</band>
+	</summary>
+</jasperReport>

@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Migrations>
+  <Migration EntityType="D" Name="Define Functions for Sales Reports" ReleaseNo="3.9.3" SeqNo="6000">
+    <Comments>Functions for Sales Reports</Comments>
+    <Step DBType="Postgres" Parse="N" SeqNo="10" StepType="SQL">
+      <SQLStatement>CREATE OR REPLACE FUNCTION linenetamtreturned(p_invoiceline_id numeric)
+  RETURNS numeric AS 
+$BODY$ 
+
+DECLARE
+	v_returnedlinenetamtreal numeric;
+BEGIN
+	v_returnedlinenetamtreal= 0;
+	
+	IF (p_invoiceline_id = 0) THEN
+		RETURN v_reversallinenetamtreal;
+	END IF;
+	
+	SELECT	COALESCE ( linenetamtrealinvoiceline(crnl.C_Invoiceline_ID), 0)
+        INTO	v_returnedlinenetamtreal
+   	FROM	   C_Invoiceline ivl
+	INNER JOIN M_InOutLine iol    ON (ivl.M_InOutLine_ID=iol.M_InOutLine_ID)
+	INNER JOIN M_RMALine rmal     ON (iol.M_InOutLine_ID=rmal.M_InOutLine_ID)
+	INNER JOIN M_InOutLine retl   ON (rmal.M_RMALine_ID=retl.M_RMALine_ID)
+	INNER JOIN C_Invoiceline crnl ON (retl.M_InOutLine_ID=crnl.M_InOutLine_ID)
+	INNER JOIN C_Invoice crn      ON (crnl.C_Invoice_ID=crn.C_Invoice_ID AND crn.docstatus='CO')
+	WHERE ivl.C_InvoiceLine_ID=p_invoiceline_id;
+	
+	RETURN coalesce(v_returnedlinenetamtreal, 0);
+END; 
+
+$BODY$ 
+  LANGUAGE plpgsql;
+      </SQLStatement>
+      <RollbackStatement>DROP FUNCTION linenetamtreturned(numeric);
+      </RollbackStatement>
+    </Step>
+    <Step DBType="Postgres" Parse="N" SeqNo="20" StepType="SQL">
+      <SQLStatement>CREATE OR REPLACE FUNCTION linenetamtvoided(
+    p_invoicereversalline_id numeric)
+  RETURNS numeric AS 
+$BODY$ 
+
+DECLARE
+	v_reversallinenetamt	numeric;
+	v_reversallinenetamtreal numeric;
+BEGIN
+	v_reversallinenetamt    = 0;
+	v_reversallinenetamtreal= 0;
+	
+	IF (p_invoicereversalline_id = 0) THEN
+		RETURN v_reversallinenetamtreal;
+	END IF;
+	
+	SELECT	COALESCE (linenetamt, 0)
+        INTO	v_reversallinenetamt
+   	FROM	C_Invoiceline
+	WHERE C_Invoiceline_ID=p_invoicereversalline_id;
+	
+	IF (v_reversallinenetamt = 0) THEN
+		RETURN v_reversallinenetamtreal;
+	END IF;
+
+	v_reversallinenetamtreal = linenetamtrealinvoiceline(p_invoicereversalline_id);
+	RETURN coalesce(v_reversallinenetamtreal, 0);
+END; 
+
+$BODY$ 
+  LANGUAGE plpgsql;
+      </SQLStatement>
+      <RollbackStatement>DROP FUNCTION linenetamtvoided(numeric);
+      </RollbackStatement>
+    </Step>
+    <Step DBType="Postgres" Parse="N" SeqNo="30" StepType="SQL">
+      <SQLStatement>CREATE OR REPLACE FUNCTION taxamtreal(p_c_orderline_id numeric)
+  RETURNS numeric AS 
+$BODY$ 
+
+DECLARE
+          v_taxamt numeric;  
+BEGIN
+
+select case when pl.istaxincluded = 'Y' AND t.rate &lt;&gt; 0 
+	then 
+	   case 
+		when o.docstatus in ('CL')
+		then round(((ol.qtyinvoiced * ol.priceactual)- (ol.qtyinvoiced * ol.priceactual)/(1+(t.rate/100))), cur.stdprecision) 
+		else round((ol.linenetamt- ol.linenetamt/(1+(t.rate/100))), cur.stdprecision) 
+            end 
+         else 0 end into v_taxamt 
+
+	from c_Orderline ol 
+	inner join c_order o on ol.c_order_ID = o.c_order_ID 
+	inner join m_pricelist pl on o.m_pricelist_ID = pl.m_pricelist_ID 
+	inner join c_tax t on ol.c_tax_ID = t.c_tax_ID 
+	inner join c_currency cur on o.c_currency_ID = cur.c_Currency_ID 
+	where ol.c_orderline_ID=p_c_orderLine_ID;
+
+    RETURN coalesce(v_taxamt,0);
+
+END; 
+
+$BODY$ 
+  LANGUAGE plpgsql;
+      </SQLStatement>
+      <RollbackStatement>DROP FUNCTION taxamtreal(numeric);
+      </RollbackStatement>
+    </Step>
+    <Step DBType="Postgres" Parse="N" SeqNo="40" StepType="SQL">
+      <SQLStatement>CREATE OR REPLACE FUNCTION taxamt_notinvoiced(p_c_orderline_id numeric)
+  RETURNS numeric AS 
+$BODY$ 
+
+DECLARE
+          v_taxamt numeric;  
+
+BEGIN	
+	select  case when pl.istaxincluded = 'Y' AND t.rate &lt;&gt; 0 
+	then 
+	   case 
+		when o.docstatus in ('CL')
+		then 0   
+		else round((((ol.qtyordered-ol.qtyinvoiced)*ol.priceactual)*(t.rate/100)), cur.stdprecision)  
+            end 
+         else 0 end into v_taxamt 
+	from c_Orderline ol
+	inner join c_order o on ol.c_order_ID = o.c_order_ID
+	inner join m_pricelist pl on o.m_pricelist_ID = pl.m_pricelist_ID
+	inner join c_tax t on ol.c_tax_ID = t.c_tax_ID
+	inner join c_currency cur on o.c_currency_ID = cur.c_Currency_ID 
+	where ol.c_orderline_ID=p_c_orderLine_ID;
+
+    RETURN coalesce(v_taxamt,0);
+
+END; 
+
+$BODY$ 
+  LANGUAGE plpgsql;
+      </SQLStatement>
+      <RollbackStatement>DROP FUNCTION taxamt_notinvoiced(numeric);
+      </RollbackStatement>
+    </Step>
+  </Migration>
+</Migrations>
