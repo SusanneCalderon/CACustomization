@@ -993,8 +993,8 @@ public class CAValidator implements ModelValidator
 	{
 		String error = "";
         if (ModelValidator.TIMING_AFTER_COMPLETE == timing) {
-        	if (po instanceof MPaySelection)
-        		error = PayselectionGeneratePayment(po);
+        	//if (po instanceof MPaySelection)
+        	//	error = PayselectionGeneratePayment(po);
         	if (po instanceof MPayment)
         		error = PaymentAutoReconcile(po);
         	if (po instanceof MTimeExpense)
