@@ -27,10 +27,7 @@ import java.util.logging.Level;
 import org.compiere.apps.ProcessCtl;
 import org.compiere.minigrid.IDColumn;
 import org.compiere.minigrid.IMiniTable;
-import org.compiere.model.MAcctSchema;
 import org.compiere.model.MAcctSchemaGL;
-import org.compiere.model.MClient;
-import org.compiere.model.MClientInfo;
 import org.compiere.model.MElementValue;
 import org.compiere.model.MPInstance;
 import org.compiere.model.MPInstancePara;
@@ -70,7 +67,6 @@ public class TrialBalanceDrill
 	protected MPeriod				yearFrom					= null;
 
 	static protected int			col_PA_ReportCube_ID	= 57582;
-	static protected int			col_C_AcctSchema_ID		= 2463;
 	static protected int			col_AD_Org_ID			= 839;
 	static protected int			col_C_BPartner_ID		= 3499;										// C_Invoice.C_BPartner_ID
 	static protected int			col_M_Product_ID		= 2527;										// Fact_Acct.M_Product_ID
@@ -87,14 +83,10 @@ public class TrialBalanceDrill
 	protected void dynInit() throws Exception
 	{
 		m_AD_Client_ID = Env.getAD_Client_ID(Env.getCtx());
-		//MClient client = MClient.get(Env.getCtx());
-		
-		//MClientInfo clientInfo = MClientInfo.get(null, m_AD_Client_ID);
-		//MAcctSchema acctSchema = clientInfo.getMAcctSchema1();
-				//MAcctSchema.getClientAcctSchema(Env.getCtx(), Env.getAD_Client_ID(Env.getCtx()))[0];
-		
-		//c_AcctSchema_ID = acctSchema.getC_AcctSchema_ID();
-		
+		c_AcctSchema_ID = DB.getSQLValue(null, "SELECT MIN(C_AcctSchema_ID) FROM C_AcctSchema WHERE AD_CLient_ID=?", m_AD_Client_ID);
+		MElementValue reEl = (MElementValue) MAcctSchemaGL.get(Env.getCtx(),c_AcctSchema_ID).getRetainedEarning_A().getAccount();
+		RETAIN_EARNING_ELEMENT_ID = reEl.getC_ElementValue_ID();
+		RETAIN_EARNING_ELEMENT_VALUE = reEl.getValue();
 		
 		pa_ReportCube_ID = DB
 				.getSQLValue(
@@ -124,10 +116,6 @@ public class TrialBalanceDrill
 	
 	public void getData(Vector<Vector<Object>> data, boolean isRetainedEarnings)
 	{
-
-		MElementValue reEl = (MElementValue) MAcctSchemaGL.get(Env.getCtx(),c_AcctSchema_ID).getRetainedEarning_A().getAccount();
-		RETAIN_EARNING_ELEMENT_ID = reEl.getC_ElementValue_ID();
-		RETAIN_EARNING_ELEMENT_VALUE = reEl.getValue();
 		period = new MPeriod(Env.getCtx(), c_PeriodTo_ID, null);
 		yearFrom = MPeriod.getFirstInYear(Env.getCtx(), period.getStartDate(), m_AD_Org_ID);
 
@@ -325,11 +313,10 @@ public class TrialBalanceDrill
 			para.save();
 		}
 
-		if (m_AD_Org_ID > 0) {
+		
 		para = new MPInstancePara(mpInstance, 30);
 		para.setParameter("AD_Org_ID", m_AD_Org_ID);
 		para.save();
-		}
 		
 		para = new MPInstancePara(mpInstance, 40);
 		para.setParameter("PostingType", (column == 4 || column == 7) ? "A" : "B");
