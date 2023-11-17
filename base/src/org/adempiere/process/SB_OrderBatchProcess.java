@@ -17,20 +17,12 @@
 
 package org.adempiere.process;
 
-import java.util.List;
-
 import org.adempiere.util.ProcessUtil;
 import org.compiere.model.MOrder;
 import org.compiere.model.MPInstance;
-import org.compiere.model.MPInstancePara;
-import org.compiere.model.MPayment;
 import org.compiere.model.MProcess;
-import org.compiere.model.X_C_Order;
 import org.compiere.process.ProcessInfo;
 import org.compiere.util.Env;
-import org.compiere.util.Trx;
-import org.compiere.wf.MWorkflow;
-import org.eevolution.model.X_HR_Process;
 
 /** Generated Process for (C_Order_Process)
  *  @author ADempiere (generated) 

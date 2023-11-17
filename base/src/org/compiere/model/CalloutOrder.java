@@ -16,13 +16,17 @@
  *****************************************************************************/
 package org.compiere.model;
 
+import org.adempiere.core.domains.models.I_C_Invoice;
+import org.adempiere.core.domains.models.I_C_Order;
+import org.adempiere.core.domains.models.I_M_AttributeSetInstance;
+import org.adempiere.core.domains.models.X_C_Order;
+import org.adempiere.core.domains.models.X_C_TaxDefinition;
 import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.compiere.util.Msg;
-import org.eevolution.model.X_C_TaxDefinition;
 
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;

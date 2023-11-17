@@ -24,7 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 
-import org.compiere.model.I_C_Period;
+import org.adempiere.core.domains.models.X_C_DocType;
 import org.compiere.model.MFactAcct;
 import org.compiere.model.MInvoice;
 import org.compiere.model.MInvoiceTax;
@@ -33,8 +33,6 @@ import org.compiere.model.MTaxDeclaration;
 import org.compiere.model.MTaxDeclarationAcct;
 import org.compiere.model.MTaxDeclarationLine;
 import org.compiere.model.Query;
-import org.compiere.model.X_C_DocType;
-import org.compiere.model.X_C_Tax;
 import org.compiere.util.AdempiereSystemError;
 import org.compiere.util.DB;
 

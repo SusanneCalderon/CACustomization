@@ -24,7 +24,8 @@ import java.util.ArrayList;
 import java.util.Properties;
 import java.util.logging.Level;
 
-
+import org.adempiere.core.domains.models.X_C_BPartner;
+import org.adempiere.core.domains.models.X_C_TaxDefinition;
 import org.compiere.model.CalloutEngine;
 import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
@@ -33,15 +34,12 @@ import org.compiere.model.MCharge;
 import org.compiere.model.MProduct;
 import org.compiere.model.MProductPricing;
 import org.compiere.model.Query;
-import org.compiere.model.X_C_BPartner;
 import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.compiere.util.Msg;
-import org.eevolution.model.X_C_TaxDefinition;
-
 /**
  *	Order Callouts.
  *	

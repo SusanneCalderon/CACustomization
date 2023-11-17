@@ -23,6 +23,7 @@ import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.logging.Level;
 
+import org.adempiere.core.domains.models.X_HR_Concept;
 import org.compiere.model.MBPartner;
 import org.compiere.model.MDocType;
 import org.compiere.model.MInvoice;
@@ -37,8 +38,7 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
 import org.compiere.wstore.ExpenseServlet;
-import org.eevolution.model.MHRConcept;
-import org.eevolution.model.X_HR_Concept;
+import org.eevolution.hr.model.MHRConcept;
 
 //import com.Verisign.payment.f;
 

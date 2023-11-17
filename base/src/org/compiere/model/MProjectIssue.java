@@ -25,6 +25,8 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.logging.Level;
 
+import org.adempiere.core.domains.models.X_C_ProjectIssue;
+import org.adempiere.core.domains.models.X_C_ProjectIssueMA;
 import org.adempiere.engine.IDocumentLine;
 import org.adempiere.exceptions.PeriodClosedException;
 import org.compiere.process.DocAction;
@@ -135,6 +137,63 @@ public class MProjectIssue extends X_C_ProjectIssue implements IDocumentLine, Do
 	 * 	Get Parent
 	 *	@return project
 	 */
+	
+
+	
+	/**************************************************************************
+	 * 	Process Issue
+	 *	@return true if processed
+	 */
+	public boolean process()
+	{
+		if (!save())
+			return false;
+		if (getM_Product_ID() == 0)
+		{
+			log.log(Level.SEVERE, "No Product");
+			return false;
+		}
+
+		MProduct product = MProduct.get (getCtx(), getM_Product_ID());
+
+		//	If not a stocked Item nothing to do
+		if (!product.isStocked())
+		{
+			setProcessed(true);
+			return save();
+		}
+
+		/** @todo Transaction */
+
+		//	**	Create Material Transactions **
+		MTransaction mTrx = new MTransaction (getCtx(), getAD_Org_ID(), 
+			MTransaction.MOVEMENTTYPE_WorkOrder_,
+			getM_Locator_ID(), getM_Product_ID(), getM_AttributeSetInstance_ID(),
+			getMovementQty().negate(), getMovementDate(), get_TrxName());
+		mTrx.setC_ProjectIssue_ID(getC_ProjectIssue_ID());
+		//
+		MLocator loc = MLocator.get(getCtx(), getM_Locator_ID());
+		if (MStorage.add(getCtx(), loc.getM_Warehouse_ID(), getM_Locator_ID(), 
+				getM_Product_ID(), getM_AttributeSetInstance_ID(), getM_AttributeSetInstance_ID(),
+				getMovementQty().negate(), null, null, get_TrxName()))
+		{
+			if (mTrx.save(get_TrxName()))
+			{
+				setProcessed (true);
+				if (save())
+					return true;
+				else
+					log.log(Level.SEVERE, "Issue not saved");		//	requires trx !!
+			}
+			else
+				log.log(Level.SEVERE, "Transaction not saved");	//	requires trx !!
+		}
+		else
+			log.log(Level.SEVERE, "Storage not updated");			//	OK
+		//
+		return false;
+	}	//	process
+	
 	public MProject getParent()
 	{
 		if (m_parent == null && getC_Project_ID() != 0)
@@ -693,61 +752,6 @@ public class MProjectIssue extends X_C_ProjectIssue implements IDocumentLine, Do
 	
 	
 
-	
-	/**************************************************************************
-	 * 	Process Issue
-	 *	@return true if processed
-	 */
-	public boolean process()
-	{
-		if (!save())
-			return false;
-		if (getM_Product_ID() == 0)
-		{
-			log.log(Level.SEVERE, "No Product");
-			return false;
-		}
-
-		MProduct product = MProduct.get (getCtx(), getM_Product_ID());
-
-		//	If not a stocked Item nothing to do
-		if (!product.isStocked())
-		{
-			setProcessed(true);
-			return save();
-		}
-
-		/** @todo Transaction */
-
-		//	**	Create Material Transactions **
-		MTransaction mTrx = new MTransaction (getCtx(), getAD_Org_ID(), 
-			MTransaction.MOVEMENTTYPE_WorkOrder_,
-			getM_Locator_ID(), getM_Product_ID(), getM_AttributeSetInstance_ID(),
-			getMovementQty().negate(), getMovementDate(), get_TrxName());
-		mTrx.setC_ProjectIssue_ID(getC_ProjectIssue_ID());
-		//
-		MLocator loc = MLocator.get(getCtx(), getM_Locator_ID());
-		if (MStorage.add(getCtx(), loc.getM_Warehouse_ID(), getM_Locator_ID(), 
-				getM_Product_ID(), getM_AttributeSetInstance_ID(), getM_AttributeSetInstance_ID(),
-				getMovementQty().negate(), null, null, get_TrxName()))
-		{
-			if (mTrx.save(get_TrxName()))
-			{
-				setProcessed (true);
-				if (save())
-					return true;
-				else
-					log.log(Level.SEVERE, "Issue not saved");		//	requires trx !!
-			}
-			else
-				log.log(Level.SEVERE, "Transaction not saved");	//	requires trx !!
-		}
-		else
-			log.log(Level.SEVERE, "Storage not updated");			//	OK
-		//
-		return false;
-	}	//	process
-	
 	private void copyProjectMA(MProjectIssue reversal) {
 		String whereClause = "C_ProjectIssue_ID=?";
 		List<X_C_ProjectIssueMA> mas = new Query(getCtx(), X_C_ProjectIssueMA.Table_Name, whereClause, get_TrxName())

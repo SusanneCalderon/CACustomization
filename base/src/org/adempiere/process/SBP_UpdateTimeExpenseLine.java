@@ -27,9 +27,8 @@ import org.compiere.model.MTimeExpenseLine;
 import org.compiere.model.Query;
 import org.compiere.process.SvrProcess;
 import org.compiere.util.Env;
-import org.eevolution.model.MHRAttribute;
-import org.eevolution.model.MHRConcept;
-import org.eevolution.model.MHREmployee;
+import org.eevolution.hr.model.MHRAttribute;
+import org.eevolution.hr.model.MHRConcept;
 
 /**
  *	Create AP Invoices from Expense Reports

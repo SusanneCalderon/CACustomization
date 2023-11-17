@@ -18,7 +18,7 @@
 package org.adempiere.process;
 
 import org.compiere.model.MTimeExpenseLine;
-import org.eevolution.model.MHRProcess;
+import org.eevolution.hr.model.MHRProcess;
 
 /** Generated Process for (SB_HRProcess_Complete)
  *  @author ADempiere (generated) 

@@ -15,15 +15,13 @@
  * or via info@adempiere.net or http://www.adempiere.net/license.html         *
  *****************************************************************************/
 
-package org.compiere.process;
+package org.adempiere.process;
 
-import org.shw.model.ProjectCalculation;
-
-/** Generated Process for (Update Costs + Revenue)
+/** Generated Process for (SHW_YearEndClosing)
  *  @author ADempiere (generated) 
- *  @version Release 3.9.5
+ *  @version Release 3.9.3
  */
-public class ProjectUpdateCosts extends ProjectUpdateCostsAbstract
+public class YearEndClosing extends YearEndClosingAbstract
 {
 	@Override
 	protected void prepare()
@@ -34,8 +32,6 @@ public class ProjectUpdateCosts extends ProjectUpdateCostsAbstract
 	@Override
 	protected String doIt() throws Exception
 	{
-		ProjectCalculation projectCalculation = new ProjectCalculation(getCtx(), getRecord_ID(), get_TrxName());
-		projectCalculation.updateProjectPerformanceCalculation();
 		return "";
 	}
 }

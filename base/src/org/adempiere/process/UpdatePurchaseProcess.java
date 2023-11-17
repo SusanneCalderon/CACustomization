@@ -19,9 +19,9 @@ package org.adempiere.process;
 
 import java.util.List;
 
-import org.compiere.model.I_C_InvoiceLine;
-import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_M_InOutLine;
+import org.adempiere.core.domains.models.I_C_InvoiceLine;
+import org.adempiere.core.domains.models.I_C_OrderLine;
+import org.adempiere.core.domains.models.I_M_InOutLine;
 import org.compiere.model.MInOutLine;
 import org.compiere.model.MInvoice;
 import org.compiere.model.MInvoiceLine;

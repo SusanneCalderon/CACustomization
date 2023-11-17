@@ -57,7 +57,7 @@ import org.compiere.model.MInventory;
 import org.compiere.model.MInvoice;
 import org.compiere.model.MInvoiceLine;
 import org.compiere.model.MInvoiceTax;
-import org.compiere.model.MLocator;
+import org.compiere.model.MMatchInv;
 import org.compiere.model.MMovement;
 import org.compiere.model.MMovementLine;
 import org.compiere.model.MOrder;
@@ -82,13 +82,12 @@ import org.compiere.model.MTaxDeclarationLine;
 import org.compiere.model.MTimeExpense;
 import org.compiere.model.MTimeExpenseLine;
 import org.compiere.model.MUOM;
-import org.compiere.model.MWarehouse;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
-import org.compiere.model.X_C_Invoice;
-import org.compiere.model.X_C_Payment;
+import org.adempiere.core.domains.models.X_C_Invoice;
+import org.adempiere.core.domains.models.X_C_Payment;
 import org.compiere.process.DocAction;
 import org.compiere.sqlj.Adempiere;
 import org.compiere.util.CLogger;
@@ -96,14 +95,11 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Language;
 import org.compiere.util.Msg;
-import org.eevolution.model.MDDOrder;
-import org.eevolution.model.MDDOrderLine;
-import org.eevolution.model.MHRAttribute;
-import org.eevolution.model.MHRConcept;
-import org.eevolution.model.MHREmployee;
-import org.eevolution.model.MPPOrder;
-import org.eevolution.model.MWMInOutBoundLine;
-import org.eevolution.model.X_C_TaxDefinition;
+import org.eevolution.hr.model.MHRAttribute;
+import org.eevolution.hr.model.MHRConcept;
+import org.eevolution.hr.model.MHREmployee;
+import org.eevolution.manufacturing.model.MPPOrder;
+import org.adempiere.core.domains.models.X_C_TaxDefinition;
 import org.globalqss.model.MLCOInvoiceWithholding;
 
 
@@ -148,7 +144,6 @@ public class CAValidator implements ModelValidator
 		engine.addModelChange(MInvoiceLine.Table_Name, this);
 		engine.addModelChange(MCommissionDetail.Table_Name, this);
 		engine.addModelChange(MTimeExpenseLine.Table_Name, this);
-		engine.addModelChange(MWMInOutBoundLine.Table_Name, this);
 		engine.addModelChange(MPaySelectionLine.Table_Name, this);
 		engine.addModelChange(MInvoiceTax.Table_Name, this);		
 		engine.addModelChange(MPaymentTerm.Table_Name, this);
@@ -177,7 +172,6 @@ public class CAValidator implements ModelValidator
 		engine.addDocValidate(MAllocationHdr.Table_Name, this);
 		engine.addDocValidate(MInOut.Table_Name, this);
 		engine.addDocValidate(MInvoice.Table_Name, this);
-		engine.addDocValidate(MDDOrder.Table_Name, this);
 		
 		
 		//	Documents to be monitored
@@ -224,9 +218,6 @@ public class CAValidator implements ModelValidator
 				error = setInvoiceLineTax(po);
 				error = UpdateCreditMemoLine(po);
 			}
-			 if (po.get_TableName().equals(MWMInOutBoundLine.Table_Name)) {
-				 error = updateM_Locator_TO(po);					 
-			 }
 			//if (po.get_TableName().equals(MTaxDeclarationLine.Table_Name) && type == ModelValidator.TYPE_BEFORE_NEW)
 			//	error = updateTaxDeclarationLIne(po);
 			 if (po.get_TableName().equals(MPayment.Table_Name)) {
@@ -272,10 +263,7 @@ public class CAValidator implements ModelValidator
 				error = updateTranslation(po);
 			}
 			
-			if (po instanceof MDDOrderLine
-					&& (TYPE_AFTER_CHANGE == type && po.is_ValueChanged(MDDOrderLine.COLUMNNAME_QtyDelivered)))
-				//error = updateWMInOutBoundLine(po)
-				;
+			
 			
 		}
 		if (type == ModelValidator.TYPE_BEFORE_NEW ) {
@@ -391,13 +379,7 @@ public class CAValidator implements ModelValidator
 	}
 	
 
-	private String updateM_Locator_TO(PO po) {
-		MWMInOutBoundLine inOutBoundLine = (MWMInOutBoundLine)po;
-		if(inOutBoundLine.getM_LocatorTo_ID() <=0)
-			inOutBoundLine.setM_LocatorTo_ID(inOutBoundLine.getWM_InOutBound().getM_Locator_ID());
-		
-		return "";
-	}
+	
 	
 	private String UpdatePaymentRule(PO po) {
 		MOrder order = (MOrder)po;
@@ -1003,8 +985,6 @@ public class CAValidator implements ModelValidator
         		error = updateUser4Order(po);
         	if (po instanceof MInOut)
         		error = updateUser4MaterialReceipt(po);
-        	if (po instanceof MMovement)
-        		error = updateDDOrderLine(po);
         }
         if (ModelValidator.TIMING_AFTER_PREPARE == timing) {
         	
@@ -1049,6 +1029,16 @@ public class CAValidator implements ModelValidator
         		}	
                 error = beforeCompleteOrderControlCreditStop(po);
         	}
+        }
+        
+        if (ModelValidator.TIMING_AFTER_COMPLETE==timing) {        	
+        	if (po instanceof MInvoice) {
+        		error = reversal_CorrectMatches(po);
+        		 if (!error.equals("")) {
+         			return error;        		
+        		}	
+        	}
+        	
         }
         
 		return error;
@@ -1248,8 +1238,6 @@ public class CAValidator implements ModelValidator
 			dateacct = "MovementDate";
 		else if (A_PO instanceof MBankStatement)
 			dateacct = "StatementDate";
-		else if (A_PO instanceof MDDOrder)
-			dateacct = "DateOrdered";
 		else if (A_PO instanceof MRequisition)
 			dateacct = "DateRequired";
 		else if (A_PO instanceof MPPOrder)
@@ -1783,39 +1771,27 @@ public class CAValidator implements ModelValidator
 			
 		}
 		
-		private String updateDDOrderLine(PO po) {
-			MMovement move = (MMovement)po;
-			for (MMovementLine line : move.getLines(false))
-			{
-				if(line.getDD_OrderLine_ID() > 0)
-				{
-					MDDOrderLine oline= new MDDOrderLine(line.getCtx(),line.getDD_OrderLine_ID(), po.get_TrxName());
-					MLocator locator_to = MLocator.get(line.getCtx(), line.getM_LocatorTo_ID());
-					MWarehouse warehouse =  MWarehouse.get(line.getCtx(), locator_to.getM_Warehouse_ID()); 
-					oline.setQtyInTransit(oline.getQtyInTransit().subtract(line.getMovementQty()));
-					oline.setQtyDelivered(oline.getQtyDelivered().add(line.getMovementQty()));
-					oline.saveEx();
 
-				}
+		private String reversal_CorrectMatches(PO po) {
+			MInvoice invoice = (MInvoice)po;
+			if (invoice.isSOTrx() ||
+					invoice.getReversal_ID()==0 ||
+					invoice.getReversal_ID()>invoice.getC_Invoice_ID())
+				return "";
+			List <MMatchInv> matchInvs = MMatchInv.getByInvoiceId(invoice.getCtx(), invoice.getReversal_ID(), invoice.get_TrxName());
+			for (MMatchInv matchInv:matchInvs) {
+				if (matchInv.getC_InvoiceLine().getReversalLine_ID() > matchInv.getC_InvoiceLine_ID())
+					continue;
+				matchInv.setC_InvoiceLine_ID(matchInv.getC_InvoiceLine().getReversalLine_ID());
+				matchInv.saveEx();
+
 			}
 			return "";
 		}
 		
-		private String updateWMInOutBoundLine(PO po) {
-
-			MDDOrderLine orderLine = (MDDOrderLine) po;
-			MWMInOutBoundLine outboundLine = (MWMInOutBoundLine) orderLine.getWM_InOutBoundLine();
-			if (outboundLine != null
-			&& outboundLine.getWM_InOutBoundLine_ID() > 0
-			&& orderLine.getQtyOrdered().compareTo(orderLine.getQtyDelivered()) >= 0) {
-				BigDecimal pickedQuantity = outboundLine.getPickedQty();
-				BigDecimal totalPickedQuantity = pickedQuantity.add(orderLine.getQtyDelivered());
-				outboundLine.setPickedQty(totalPickedQuantity);
-				outboundLine.saveEx();
-			}
-			
-			return "";
-		}
+		
+		
+		
 
 	
 		

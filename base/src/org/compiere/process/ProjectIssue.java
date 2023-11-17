@@ -28,6 +28,7 @@ import org.compiere.model.MProjectLine;
 import org.compiere.model.MStorage;
 import org.compiere.model.MTimeExpense;
 import org.compiere.model.MTimeExpenseLine;
+import org.compiere.project.process.ProjectIssueAbstract;
 import org.compiere.util.Env;
 
 /**
